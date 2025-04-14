@@ -1,0 +1,126 @@
+---
+title: "HW8"
+output: html_document
+date: "2025-04-14"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Problem 1
+
+```{r problem 1}
+creatinine <- read.csv("creatinine.csv")
+model <- lm(creatclear ~ age, data = creatinine)
+summary(model)
+
+predict(model, newdata = data.frame(age = 55))
+
+#Part B
+coef(model)["age"]
+
+#Part C
+pred_40 <- predict(model, newdata = data.frame(age = 40))
+pred_60 <- predict(model, newdata = data.frame(age = 60))
+
+actual_40 <- 135
+actual_60 <- 112
+
+resid_40 <- actual_40 - pred_40
+resid_60 <- actual_60 - pred_60
+
+resid_40
+resid_60
+```
+
+### Part A
+
+Using a linear regression of creatinine clearance on age, we predict that a 55-year-old will have a clearance rate of approximately 113.723 mL/min, based on the model
+
+### Part B
+
+The slope of the regression model is −0.620, showing that as age increases, creatinine clearance decreases by about 0.620.
+
+### Part C
+
+Compared to the model’s predictions, the 40-year-old has a creatinine clearance rate 12 mL higher than expected, while the 60-year-old is only about 1.4 mL above expected rate. This shows that the 40-year-old has much healthier kidney function.
+
+## Problem 2
+
+```{r problem 2}
+covid <- read.csv("covid.csv")
+covid$log_deaths <- log(covid$deaths)
+italy_data <- subset(covid, country == "Italy")
+
+italy_model <- lm(log_deaths ~ days_since_first_death, data = italy_data)
+italy_growth <- coef(italy_model)["days_since_first_death"]
+italy_doubling <- log(2) / italy_growth
+
+italy_growth
+italy_doubling
+
+confint(italy_model)["days_since_first_death", ]
+
+log(2) / rev(confint(italy_model)["days_since_first_death", ])
+
+
+
+#part 2
+spain_data <- subset(covid, country == "Spain")
+spain_model <- lm(log_deaths ~ days_since_first_death, data = spain_data)
+
+spain_growth <- coef(spain_model)["days_since_first_death"]
+spain_doubling <- log(2) / spain_growth
+spain_growth
+spain_doubling
+
+confint(spain_model)["days_since_first_death", ]
+log(2)/ rev(confint(spain_model)["days_since_first_death", ])
+
+
+#Part 3
+library(ggplot2)
+ggplot(covid, aes(x = days_since_first_death, y = deaths, color = country)) +
+  geom_line(size = 1.5) +
+  labs(
+    title = "Daily COVID-19 Deaths Over Time",
+    x = "Days Since First Death",
+    y = "Daily Reported Deaths",
+    color = "Country"
+  ) +
+  theme_minimal()
+```
+
+### Part 1
+
+-   The estimated growth rate is 0.183, with a 95% confidence interval of (0.161, 0.205).
+
+-   The doubling time is estimated at 3.8 days, with a 95% confidence interval of (3.3, 4.4).
+
+### Part 2
+
+For Spain, the exponential regression model estimates a growth rate of 0.276, with a 95% confidence interval of approximately (0.244, 0.308).
+
+The doubling time is estimated about 2.5 days, with a 95% confidence interval of (2.2, 2.9).
+
+Both intervals for both Spain and Italy are statistically significant because they all do not contain 0 in the interval.
+
+## Problem 3
+
+```{r problem 3}
+milk <- read.csv("milk.csv")
+milk$log_price <- log(milk$price)
+milk$log_sales <- log(milk$sales)
+
+model <- lm(log_sales ~ log_price, data = milk)
+summary(model)
+
+confint(model)["log_price", ]
+```
+
+-   The estimated price elasticity of demand for milk is −1.619. This indicates that for every 1% increase in price, milk sales decrease by approximately 1.62%.
+
+-   To find the price elasticity, I took the log of price and sales to use the power-law equation that was given. Then I ran a linear regression in R with log(sales) and log(prices) and the slope of that line gave me the elasticity.
+
+-   The 95% confidence interval for the elasticity is (−1.779, −1.458). This means we are 95% confident that the elasticity falls within that range, and since the interval doesn't include 0, meaning it is statistically significant.
